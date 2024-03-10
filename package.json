@@ -1,10 +1,11 @@
 {
   "name": "@crewdle/mist-connector-opfs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Crewdle Mist connector to use OPFS as an Object Store",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack build --mode=production && cp src/index.d.ts dist/index.d.ts"
   },
   "repository": {
     "type": "git",
@@ -21,5 +22,12 @@
   },
   "files": [
     "src/"
-  ]
+  ],
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.2",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
+  }
 }
