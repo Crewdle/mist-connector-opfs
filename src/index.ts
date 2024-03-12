@@ -27,11 +27,9 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
   /**
    * The constructor.
    * @param storeKey The store key.
-   * @param label The label.
    */
   constructor(
     private readonly storeKey: string,
-    private readonly label: string,
   ) {}
 
   /**
@@ -125,8 +123,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
     }
 
     const opfsRoot = await navigator.storage.getDirectory();
-    const clusterRoot = await opfsRoot.getDirectoryHandle(this.storeKey, { create: true });
-    this.root = await clusterRoot.getDirectoryHandle(this.label, { create: true });
+    this.root = await opfsRoot.getDirectoryHandle(this.storeKey, { create: true });
 
     return this.root;
   }
