@@ -1,4 +1,4 @@
-import { ObjectKind, ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
+import type { ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
 
 /**
  * TODO - remove when new release of typescript is available
@@ -349,3 +349,11 @@ function splitPathName(pathName: string): [string, string] {
   return [path.length === 0 ? '/' : path, name];
 }
 
+/**
+ * The object kind enum.
+ * @ignore
+ */
+enum ObjectKind {
+  File = "file",
+  Folder = "folder"
+}
