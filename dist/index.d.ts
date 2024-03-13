@@ -1,4 +1,4 @@
-import { ObjectKind, ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
+import type { ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
 /**
  * TODO - remove when new release of typescript is available
  * @ignore
@@ -111,3 +111,12 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      */
     private copyDirectory;
 }
+/**
+ * The object kind enum.
+ * @ignore
+ */
+declare enum ObjectKind {
+    File = "file",
+    Folder = "folder"
+}
+export {};
