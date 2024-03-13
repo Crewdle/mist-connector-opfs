@@ -17,7 +17,6 @@ declare global {
  */
 export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
     private readonly storeKey;
-    private readonly label;
     /**
      * The root directory handle.
      * @ignore
@@ -26,9 +25,8 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
     /**
      * The constructor.
      * @param storeKey The store key.
-     * @param label The label.
      */
-    constructor(storeKey: string, label: string);
+    constructor(storeKey: string);
     /**
      * Get a file.
      * @param path The path of the file.
