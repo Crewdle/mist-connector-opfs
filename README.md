@@ -21,7 +21,7 @@ import { OPFSObjectStoreConnector } from '@crewdle/mist-connector-opfs';
 
 // Create a new SDK instance
 const sdk = await SDK.getInstance('[VENDOR ID]', '[ACCESS TOKEN]', {
-  objectStorageConnector: OPFSObjectStoreConnector,
+  objectStoreConnector: OPFSObjectStoreConnector,
 });
 ```
 
