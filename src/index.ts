@@ -1,4 +1,6 @@
-import type { ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
+import type { ObjectDescriptor, IObjectStoreConnector } from '@crewdle/web-sdk-types';
+import { ObjectKind } from '@crewdle/web-sdk-types';
+import { getPathName, getPathParts, splitPathName } from 'helpers';
 
 /**
  * TODO - remove when new release of typescript is available
@@ -38,8 +40,12 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @returns A promise that resolves with the file.
    */
   async get(path: string): Promise<File> {
-    const [directoryHandle, objectName] = await this.getFolderHandle(path) as [FileSystemDirectoryHandle, string, string[]];
+    const [directoryHandle, objectName] = await this.getFolderHandle(path);
     for await (const value of directoryHandle.values()) {
+      if (value.name !== objectName) {
+        continue;
+      }
+
       if (value.kind === 'directory') {
         throw new Error(`Cannot get file: ${path}`);
       } else {
@@ -59,7 +65,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
   async list(path: string, recursive = false): Promise<ObjectDescriptor[]> {
     try {
       const descriptors: ObjectDescriptor[] = [];
-      const [handle, objectName, pathParts] = await this.getFolderHandle(path) as [FileSystemDirectoryHandle, string, string[]];
+      const [handle, objectName, pathParts] = await this.getFolderHandle(path);
       const directoryHandle = path === '/' ? handle : await handle.getDirectoryHandle(objectName);
 
       for await (const value of directoryHandle.values()) {
@@ -88,70 +94,21 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
       }
       return descriptors;
     } catch (e) {
-      throw new Error(`Cannot list directory: ${path}`);
+      throw new Error(`Cannot list folder: ${path}`);
     }
   }
 
   /**
-   * Get a folder handle. If the folder does not exist, it will be created.
-   * @param path The path of the folder.
-   * @returns A promise that resolves with the folder handle.
+   * Create a folder.
+   * @param path The path of the folder to create.
+   * @returns A promise that resolves when the folder is created.
    */
-  public async getOrCreateFolderHandle(path?: string): Promise<IFolderHandle> {
+  public async createFolder(path: string): Promise<void> {
     try {
-      let directoryHandle = await this.getRootFolderHandle() as FileSystemDirectoryHandle;
-      if (path) {
-        const pathParts = getPathParts(path);
-        for (const part of pathParts) {
-          directoryHandle = await directoryHandle.getDirectoryHandle(part, { create: true });
-        }
-      }
-
-      return directoryHandle;
+      await this.getOrCreateFolderHandle(path);
     } catch (e) {
-      throw new Error(`Cannot get or create directory: ${path}`);
+      throw new Error(`Cannot create folder: ${path}`);
     }
-  }
-
-  /**
-   * Get the root folder handle.
-   * @returns A promise that resolves with the root folder handle.
-   */
-  public async getRootFolderHandle(): Promise<IFolderHandle> {
-    if (this.root) {
-      return this.root;
-    }
-
-    const opfsRoot = await navigator.storage.getDirectory();
-    this.root = await opfsRoot.getDirectoryHandle(this.storeKey, { create: true });
-
-    return this.root;
-  }
-
-  /**
-   * Get a folder handle.
-   * @param path The path of the folder.
-   * @returns A promise that resolves with the folder handle.
-   */
-  public async getFolderHandle(path: string): Promise<[IFolderHandle, string, string[]]> {
-    try {
-      let directoryHandle = await this.getRootFolderHandle() as FileSystemDirectoryHandle;
-      if (path === '/') {
-        return [directoryHandle, '', []];
-      }
-
-      const pathParts = getPathParts(path);
-      for (const [i, part] of pathParts.entries()) {
-        if (i === pathParts.length - 1) {
-          return [directoryHandle, part, pathParts];
-        }
-        directoryHandle = await directoryHandle.getDirectoryHandle(part);
-      }
-    } catch (e) {
-      throw new Error(`Cannot get directory: ${path}`);
-    }
-
-    throw new Error(`Cannot get directory: ${path}`);
   }
 
   /**
@@ -162,7 +119,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    */
   public async writeFile(file: File, path?: string): Promise<void> {
     try {
-      const directoryHandle = await this.getOrCreateFolderHandle(path) as FileSystemDirectoryHandle;
+      const directoryHandle = await this.getOrCreateFolderHandle(path);
       const fileHandle = await directoryHandle.getFileHandle(file.name, { create: true });
       const writable = await fileHandle.createWritable();
       await writable.write(file);
@@ -178,7 +135,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @returns A promise that resolves with the kind of object that was deleted.
    */
   public async deleteObject(path: string): Promise<ObjectKind> {
-    const [directoryHandle, objectName] = await this.getFolderHandle(path) as [FileSystemDirectoryHandle, string, string[]];
+    const [directoryHandle, objectName] = await this.getFolderHandle(path);
     for await (const value of directoryHandle.values()) {
       if (value.name !== objectName) {
         continue;
@@ -207,7 +164,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    */
   public async moveObject(path: string, newPath: string): Promise<ObjectKind> {
     try {
-      const [directoryHandle, objectName] = await this.getFolderHandle(path) as [FileSystemDirectoryHandle, string, string[]];
+      const [directoryHandle, objectName] = await this.getFolderHandle(path);
       for await (const value of directoryHandle.values()) {
         if (value.name !== objectName) {
           continue;
@@ -250,6 +207,71 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
   }
 
   /**
+   * Get a folder handle. If the folder does not exist, it will be created.
+   * @param path The path of the folder.
+   * @returns A promise that resolves with the directory handle.
+   * @ignore
+   */
+  private async getOrCreateFolderHandle(path?: string): Promise<FileSystemDirectoryHandle> {
+    try {
+      let directoryHandle = await this.getRootFolderHandle();
+      if (path) {
+        const pathParts = getPathParts(path);
+        for (const part of pathParts) {
+          directoryHandle = await directoryHandle.getDirectoryHandle(part, { create: true });
+        }
+      }
+
+      return directoryHandle;
+    } catch (e) {
+      throw new Error(`Cannot get or create folder: ${path}`);
+    }
+  }
+
+  /**
+   * Get the root folder handle.
+   * @returns A promise that resolves with the root folder handle.
+   * @ignore
+   */
+  private async getRootFolderHandle(): Promise<FileSystemDirectoryHandle> {
+    if (this.root) {
+      return this.root;
+    }
+
+    const opfsRoot = await navigator.storage.getDirectory();
+    this.root = await opfsRoot.getDirectoryHandle(this.storeKey, { create: true });
+
+    return this.root;
+  }
+
+  /**
+   * Get a folder handle.
+   * @param path The path of the folder.
+   * @returns A promise that resolves with the folder handle.
+   * @ignore
+   */
+  private async getFolderHandle(path: string): Promise<[FileSystemDirectoryHandle, string, string[]]> {
+    try {
+      let directoryHandle = await this.getRootFolderHandle();
+      if (path === '/') {
+        return [directoryHandle, '', []];
+      }
+
+      const pathParts = getPathParts(path);
+      for (const [i, part] of pathParts.entries()) {
+        if (i === pathParts.length - 1) {
+          return [directoryHandle, part, pathParts];
+        }
+        directoryHandle = await directoryHandle.getDirectoryHandle(part);
+      }
+    } catch (e) {
+      throw new Error(`Cannot get folder: ${path}`);
+    }
+
+    throw new Error(`Cannot get folder: ${path}`);
+  }
+
+  /**
    * Move a file.
    * @param fileHandle The file handle
    * @param path The path of the file
@@ -287,7 +309,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
       await this.copyDirectory(newHandle, path, newPath);
       await this.deleteObject(path);
     } catch (e) {
-      throw new Error(`Cannot move directory: ${path}`);
+      throw new Error(`Cannot move folder: ${path}`);
     }
   }
 
@@ -310,50 +332,4 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
       }
     }
   }
-}
-
-/**
- * Get the parts of a path
- * @category Object Storage
- * @param path The path to split
- * @returns The parts of the path
- * @ignore
- */
-function getPathParts(path: string): string[] {
-  return path.split('/').filter((part) => part.length > 0);
-}
-
-/**
- * Get the path name of an object from a path and a name
- * @category Object Storage
- * @param path The path to the object
- * @param name The name of the object
- * @returns The path name of the object
- * @ignore
- */
-function getPathName(path: string, name: string): string {
-  return path === '/' ? path + name : path + '/' + name;
-}
-
-/**
- * Split a path name into its path and name
- * @category Object Storage
- * @param pathName The path name to split
- * @returns The path and name of the object
- * @ignore
- */
-function splitPathName(pathName: string): [string, string] {
-  const parts = getPathParts(pathName);
-  const name = parts.pop() || '';
-  const path = parts.join('/');
-  return [path.length === 0 ? '/' : path, name];
-}
-
-/**
- * The object kind enum.
- * @ignore
- */
-enum ObjectKind {
-  File = "file",
-  Folder = "folder"
 }

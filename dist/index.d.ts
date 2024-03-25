@@ -1,4 +1,5 @@
-import type { ObjectDescriptor, IFolderHandle, IObjectStoreConnector } from '@crewdle/web-sdk';
+import type { ObjectDescriptor, IObjectStoreConnector } from '@crewdle/web-sdk-types';
+import { ObjectKind } from '@crewdle/web-sdk-types';
 /**
  * TODO - remove when new release of typescript is available
  * @ignore
@@ -41,22 +42,11 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      */
     list(path: string, recursive?: boolean): Promise<ObjectDescriptor[]>;
     /**
-     * Get a folder handle. If the folder does not exist, it will be created.
-     * @param path The path of the folder.
-     * @returns A promise that resolves with the folder handle.
+     * Create a folder.
+     * @param path The path of the folder to create.
+     * @returns A promise that resolves when the folder is created.
      */
-    getOrCreateFolderHandle(path?: string): Promise<IFolderHandle>;
-    /**
-     * Get the root folder handle.
-     * @returns A promise that resolves with the root folder handle.
-     */
-    getRootFolderHandle(): Promise<IFolderHandle>;
-    /**
-     * Get a folder handle.
-     * @param path The path of the folder.
-     * @returns A promise that resolves with the folder handle.
-     */
-    getFolderHandle(path: string): Promise<[IFolderHandle, string, string[]]>;
+    createFolder(path: string): Promise<void>;
     /**
      * Write a file.
      * @param file The file to write.
@@ -83,6 +73,26 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      * @returns A promise that resolves with the size of the object.
      */
     calculateSize(path: string): Promise<number>;
+    /**
+     * Get a folder handle. If the folder does not exist, it will be created.
+     * @param path The path of the folder.
+     * @returns A promise that resolves with the directory handle.
+     * @ignore
+     */
+    private getOrCreateFolderHandle;
+    /**
+     * Get the root folder handle.
+     * @returns A promise that resolves with the root folder handle.
+     * @ignore
+     */
+    private getRootFolderHandle;
+    /**
+     * Get a folder handle.
+     * @param path The path of the folder.
+     * @returns A promise that resolves with the folder handle.
+     * @ignore
+     */
+    private getFolderHandle;
     /**
      * Move a file.
      * @param fileHandle The file handle
@@ -111,12 +121,3 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      */
     private copyDirectory;
 }
-/**
- * The object kind enum.
- * @ignore
- */
-declare enum ObjectKind {
-    File = "file",
-    Folder = "folder"
-}
-export {};
