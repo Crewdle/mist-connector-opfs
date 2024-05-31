@@ -1,4 +1,4 @@
-import type { ObjectDescriptor, IObjectStoreConnector } from '@crewdle/web-sdk-types';
+import type { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor } from '@crewdle/web-sdk-types';
 import { ObjectKind } from '@crewdle/web-sdk-types';
 import { getPathName, getPathParts, splitPathName } from 'helpers';
 
@@ -103,9 +103,16 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @param path The path of the folder to create.
    * @returns A promise that resolves when the folder is created.
    */
-  public async createFolder(path: string): Promise<void> {
+  public async createFolder(path: string): Promise<IFolderDescriptor> {
     try {
       await this.getOrCreateFolderHandle(path);
+      const [folderPath, name] = splitPathName(path);
+      return {
+        kind: ObjectKind.Folder,
+        name,
+        path: folderPath,
+        pathName: path,
+      };
     } catch (e) {
       throw new Error(`Cannot create folder: ${path}`);
     }
@@ -117,13 +124,22 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @param path The path to write the file to.
    * @returns A promise that resolves when the file is written.
    */
-  public async writeFile(file: File, path?: string): Promise<void> {
+  public async writeFile(file: File, path?: string): Promise<IFileDescriptor> {
     try {
       const directoryHandle = await this.getOrCreateFolderHandle(path);
       const fileHandle = await directoryHandle.getFileHandle(file.name, { create: true });
       const writable = await fileHandle.createWritable();
       await writable.write(file);
       await writable.close();
+
+      return {
+        kind: ObjectKind.File,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        path: path ?? '/',
+        pathName: getPathName(path ?? '/', file.name),
+      };
     } catch (e) {
       throw new Error(`Cannot write file: ${getPathName(path ?? '/', file.name)}`);
     }

@@ -21,7 +21,7 @@
     "dist/"
   ],
   "devDependencies": {
-    "@crewdle/web-sdk-types": "^1.0.0",
+    "@crewdle/web-sdk-types": "git@github.com:Crewdle/web-sdk-types.git#CA-2230-upload-models",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.2",
     "webpack": "^5.90.3",
