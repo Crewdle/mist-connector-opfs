@@ -1,5 +1,5 @@
 import type { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor } from '@crewdle/web-sdk-types';
-import { ObjectKind } from '@crewdle/web-sdk-types';
+import { FileStatus, ObjectKind } from '@crewdle/web-sdk-types';
 import { getPathName, getPathParts, splitPathName } from 'helpers';
 
 /**
@@ -89,6 +89,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
             size: file.size,
             path: filePath,
             pathName,
+            status: FileStatus.Synced,
           });
         }
       }
@@ -139,6 +140,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
         size: file.size,
         path: path ?? '/',
         pathName: getPathName(path ?? '/', file.name),
+        status: FileStatus.Synced,
       };
     } catch (e) {
       throw new Error(`Cannot write file: ${getPathName(path ?? '/', file.name)}`);
