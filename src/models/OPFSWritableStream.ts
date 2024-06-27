@@ -10,7 +10,7 @@ export class OPFSWritableStream implements IWritableStream {
    * Creates a new instance of OPFSWritableStream.
    * @param writer The writer for the stream.
    */
-  constructor(writer: WritableStreamDefaultWriter<Uint8Array>) {
+  constructor(private writable: FileSystemWritableFileStream) {
     this.writer = writer;
   }
 
@@ -20,8 +20,7 @@ export class OPFSWritableStream implements IWritableStream {
    * @returns A promise that resolves when the write operation is complete.
    */
   async write(chunk: ArrayBuffer): Promise<void> {
-    const uint8Array = new Uint8Array(chunk);
-    await this.writer.write(uint8Array);
+    await this.writable.write(chunk);
   }
 
   /**
@@ -29,6 +28,18 @@ export class OPFSWritableStream implements IWritableStream {
    * @returns A promise that resolves when the stream is closed.
    */
   async close(): Promise<void> {
-    await this.writer.close();
+    if (this.writable.locked) {
+      // Wait for the stream to unlock
+      await new Promise<void>((resolve) => {
+        const interval = setInterval(() => {
+          if (!this.writable.locked) {
+            resolve();
+            clearInterval(interval);
+          }
+        });
+      });
+    }
+
+    await this.writable.close();
   }
 }

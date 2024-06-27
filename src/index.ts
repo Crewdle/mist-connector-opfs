@@ -154,11 +154,12 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
    */
   public async createWritableStream(path: string): Promise<IWritableStream> {
-    const root = await navigator.storage.getDirectory();
-    const fileHandle = await root.getFileHandle(path, { create: true });
+    const directoryHandle = await this.getOrCreateFolderHandle(path);
+    const [_, name] = splitPathName(path);
+    const fileHandle = await directoryHandle.getFileHandle(name, { create: true });
     const writable = await fileHandle.createWritable();
 
-    return new OPFSWritableStream(writable.getWriter());
+    return new OPFSWritableStream(writable);
   }
 
   /**
