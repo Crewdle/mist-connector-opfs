@@ -56,7 +56,7 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
     /**
      * Creates a writable stream for a file.
      * @param path The path to the file.
-     * @returns A promise that resolves with a writable stream.
+     * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
      */
     createWritableStream(path: string): Promise<IWritableStream>;
     /**
