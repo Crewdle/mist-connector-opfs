@@ -8,7 +8,7 @@ export class OPFSWritableStream implements IWritableStream {
 
   /**
    * Creates a new instance of OPFSWritableStream.
-   * @param writer The writer for the stream.
+   * @param writable The writable stream to write to.
    */
   constructor(private writable: FileSystemWritableFileStream) {
     this.writer = writer;

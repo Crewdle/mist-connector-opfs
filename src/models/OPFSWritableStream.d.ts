@@ -6,7 +6,7 @@ export declare class OPFSWritableStream implements IWritableStream {
     private writable;
     /**
      * Creates a new instance of OPFSWritableStream.
-     * @param
+     * @param writable The writable stream to write to.
      */
     constructor(writable: FileSystemWritableFileStream);
     /**

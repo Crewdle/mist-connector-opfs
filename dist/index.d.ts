@@ -58,7 +58,7 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      * @param path The path to the file.
      * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
      */
-    createWritableStream(path: string): Promise<IWritableStream>;
+    createWritableStream(pathName: string): Promise<IWritableStream>;
     /**
      * Delete an object.
      * @param path The path of the object to delete.

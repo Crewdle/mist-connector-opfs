@@ -153,9 +153,9 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @param path The path to the file.
    * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
    */
-  public async createWritableStream(path: string): Promise<IWritableStream> {
+  public async createWritableStream(pathName: string): Promise<IWritableStream> {
+    const [path, name] = splitPathName(pathName);
     const directoryHandle = await this.getOrCreateFolderHandle(path);
-    const [_, name] = splitPathName(path);
     const fileHandle = await directoryHandle.getFileHandle(name, { create: true });
     const writable = await fileHandle.createWritable();
 
