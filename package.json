@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "webpack build --mode=production && mv src/index.d.ts dist/index.d.ts && rm src/*.d.ts"
+    "build": "webpack build --mode=production && mv src/index.d.ts dist/index.d.ts && rm src/*.d.ts",
+    "types": "cd ../web-sdk-types && npm run build && cp -r dist/* ../mist-connector-opfs/node_modules/@crewdle/web-sdk-types/dist"
   },
   "repository": {
     "type": "git",

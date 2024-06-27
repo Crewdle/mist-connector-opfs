@@ -1,6 +1,7 @@
-import type { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor } from '@crewdle/web-sdk-types';
-import { FileStatus, ObjectKind } from '@crewdle/web-sdk-types';
+import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, FileStatus, ObjectKind, IWritableStream } from '@crewdle/web-sdk-types';
+
 import { getPathName, getPathParts, splitPathName } from 'helpers';
+import { OPFSWritableStream } from 'models/OPFSWritableStream';
 
 /**
  * TODO - remove when new release of typescript is available
@@ -145,6 +146,19 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
     } catch (e) {
       throw new Error(`Cannot write file: ${getPathName(path ?? '/', file.name)}`);
     }
+  }
+
+  /**
+   * Creates a writable stream for a file.
+   * @param path The path to the file.
+   * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
+   */
+  public async createWritableStream(path: string): Promise<IWritableStream> {
+    const root = await navigator.storage.getDirectory();
+    const fileHandle = await root.getFileHandle(path, { create: true });
+    const writable = await fileHandle.createWritable();
+
+    return new OPFSWritableStream(writable.getWriter());
   }
 
   /**
