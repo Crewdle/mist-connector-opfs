@@ -4,14 +4,12 @@ import { IWritableStream } from '@crewdle/web-sdk-types';
  * Represents a writable stream for OPFS.
  */
 export class OPFSWritableStream implements IWritableStream {
-  private writer: WritableStreamDefaultWriter<Uint8Array>;
 
   /**
    * Creates a new instance of OPFSWritableStream.
    * @param writable The writable stream to write to.
    */
   constructor(private writable: FileSystemWritableFileStream) {
-    this.writer = writer;
   }
 
   /**
