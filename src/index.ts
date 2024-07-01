@@ -1,6 +1,7 @@
-import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, FileStatus, ObjectKind, IWritableStream } from '@crewdle/web-sdk-types';
+import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, FileStatus, ObjectKind, IWritableStream, IFile } from '@crewdle/web-sdk-types';
 
 import { getPathName, getPathParts, splitPathName } from 'helpers';
+import { OPFSFile } from 'models/OPFSFile';
 import { OPFSWritableStream } from 'models/OPFSWritableStream';
 
 /**
@@ -40,7 +41,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @param path The path of the file.
    * @returns A promise that resolves with the file.
    */
-  async get(path: string): Promise<File> {
+  async get(path: string): Promise<IFile> {
     const [directoryHandle, objectName] = await this.getFolderHandle(path);
     for await (const value of directoryHandle.values()) {
       if (value.name !== objectName) {
@@ -51,7 +52,8 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
         throw new Error(`Cannot get file: ${path}`);
       } else {
         const fileHandle = await directoryHandle.getFileHandle(objectName);
-        return await fileHandle.getFile();
+        const file = await fileHandle.getFile();
+        return new OPFSFile(file);
       }
     }
     throw new Error(`Cannot get file: ${path}`);

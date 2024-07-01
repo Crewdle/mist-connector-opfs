@@ -1,4 +1,4 @@
-import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, ObjectKind, IWritableStream } from '@crewdle/web-sdk-types';
+import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, ObjectKind, IWritableStream, IFile } from '@crewdle/web-sdk-types';
 /**
  * TODO - remove when new release of typescript is available
  * @ignore
@@ -32,7 +32,7 @@ export declare class OPFSObjectStoreConnector implements IObjectStoreConnector {
      * @param path The path of the file.
      * @returns A promise that resolves with the file.
      */
-    get(path: string): Promise<File>;
+    get(path: string): Promise<IFile>;
     /**
      * List the objects in a folder.
      * @param path The path of the folder.
