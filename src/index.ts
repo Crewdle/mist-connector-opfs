@@ -1,6 +1,8 @@
-import type { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor } from '@crewdle/web-sdk-types';
-import { FileStatus, ObjectKind } from '@crewdle/web-sdk-types';
+import { ObjectDescriptor, IObjectStoreConnector, IFolderDescriptor, IFileDescriptor, FileStatus, ObjectKind, IWritableStream, IFile } from '@crewdle/web-sdk-types';
+
 import { getPathName, getPathParts, splitPathName } from 'helpers';
+import { OPFSFile } from 'models/OPFSFile';
+import { OPFSWritableStream } from 'models/OPFSWritableStream';
 
 /**
  * TODO - remove when new release of typescript is available
@@ -39,7 +41,7 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
    * @param path The path of the file.
    * @returns A promise that resolves with the file.
    */
-  async get(path: string): Promise<File> {
+  async get(path: string): Promise<IFile> {
     const [directoryHandle, objectName] = await this.getFolderHandle(path);
     for await (const value of directoryHandle.values()) {
       if (value.name !== objectName) {
@@ -50,7 +52,8 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
         throw new Error(`Cannot get file: ${path}`);
       } else {
         const fileHandle = await directoryHandle.getFileHandle(objectName);
-        return await fileHandle.getFile();
+        const file = await fileHandle.getFile();
+        return new OPFSFile(file);
       }
     }
     throw new Error(`Cannot get file: ${path}`);
@@ -145,6 +148,20 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
     } catch (e) {
       throw new Error(`Cannot write file: ${getPathName(path ?? '/', file.name)}`);
     }
+  }
+
+  /**
+   * Creates a writable stream for a file.
+   * @param path The path to the file.
+   * @returns A promise that resolves with an {@link IWritableStream | IWritableStream }.
+   */
+  public async createWritableStream(pathName: string): Promise<IWritableStream> {
+    const [path, name] = splitPathName(pathName);
+    const directoryHandle = await this.getOrCreateFolderHandle(path);
+    const fileHandle = await directoryHandle.getFileHandle(name, { create: true });
+    const writable = await fileHandle.createWritable();
+
+    return new OPFSWritableStream(writable);
   }
 
   /**
