@@ -13,6 +13,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "outDir": "dist/",
 
     /* Type Checking */
     "strict": true,
