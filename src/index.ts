@@ -83,6 +83,9 @@ export class OPFSObjectStoreConnector implements IObjectStoreConnector {
             entries: recursive ? await this.list(pathName, recursive) : [],
           });
         } else {
+          if (value.name.endsWith('.crswap')) {
+            continue;
+          }
           const fileHandle = await directoryHandle.getFileHandle(value.name);
           const file = await fileHandle.getFile();
           descriptors.push({
