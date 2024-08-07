@@ -5,6 +5,8 @@ import { IWritableStream } from '@crewdle/web-sdk-types';
  */
 export class OPFSWritableStream implements IWritableStream {
 
+  private closed = false;
+
   /**
    * Creates a new instance of OPFSWritableStream.
    * @param writable The writable stream to write to.
@@ -26,6 +28,11 @@ export class OPFSWritableStream implements IWritableStream {
    * @returns A promise that resolves when the stream is closed.
    */
   async close(): Promise<void> {
+    if (this.closed) {
+      return;
+    }
+
+    this.closed = true;
     if (this.writable.locked) {
       // Wait for the stream to unlock
       await new Promise<void>((resolve) => {

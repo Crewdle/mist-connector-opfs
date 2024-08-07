@@ -4,6 +4,7 @@ import { IWritableStream } from '@crewdle/web-sdk-types';
  */
 export declare class OPFSWritableStream implements IWritableStream {
     private writable;
+    private closed;
     /**
      * Creates a new instance of OPFSWritableStream.
      * @param writable The writable stream to write to.
